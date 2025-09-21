@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Quiz Game</title>
+    <style>
+      
+        body {
+            font-family: Arial, sans-serif;
+           
+            background-image: url('images/MVC-09.jpeg');
+            background-size: cover;           /* Makes image cover entire screen */
+            background-position: center;      /* Centers the image */
+            background-repeat: no-repeat;     /* Prevents image repetition */
+            background-attachment: fixed;     /* Optional: keeps image fixed during scroll */
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-container {
+            background: darkkhaki;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        
+        .title {
+            color: #8b4513;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        
+        
+        .timer {
+            font-size: 4em;
+            color: #ff6b6b;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .timer.warning {
+            color: #ff0000;
+            animation: pulse 0.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .animal-image {
+            width: 300px;
+            height: 300px;
+            border: 3px solid #8ABB2A;
+            border-radius: 10px;
+            margin: 20px 0;
+            object-fit: cover;
+            background-color: #f0f0f0;
+        }
+        
+        .score {
+            font-size: 1.5em;
+            margin: 20px 0;
+            color: #654321;
+        }
+        
+        .buttons {
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: #8b4513;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #654321;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .final-screen {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Welcome Screen -->
+        <div id="welcome-screen">
+            <h1 class="title">🦁 Animal Quiz Game 🦁</h1>
+            <h2 class="title">Happy birthday Rita!</h2>
+            <div class="instructions">
+                <h3>How to Play:</h3>
+                <p>• There are 35 animal pictures</p>
+                <p>• The clock will go faster and faster</p>
+                <p>• Click "RITA!" if you can name the animal</p>
+            </div>
+            <button class="btn" onclick="startGame()">Start the Quizzzz</button>
+        </div>
+        
+        <!-- Game Screen -->
+        <div id="game-screen" style="display: none;">
+            <div class="score">
+                Score: <span id="current-score">0</span> / <span id="total-questions">10</span>
+            </div>
+            
+            <div class="timer" id="timer">10</div>
+            
+            <!-- Placeholder for animal image - YOU CAN REPLACE THESE -->
+            <img id="animal-image" class="animal-image" src="https://via.placeholder.com/300x300/deb887/654321?text=Animal+Picture" alt="Animal">
+            
+            <div class="buttons">
+                <button class="btn btn-success" onclick="playerGotIt()">✅ RITA!</button>
+                <button class="btn" onclick="nextAnimal()">⏭️ Next Animal</button>
+            </div>
+            
+            <div id="animal-name" style="font-size: 1.3em; margin-top: 15px; color: #654321;"></div>
+        </div>
+        
+        <!-- Final Screen -->
+        <div id="final-screen" class="final-screen">
+            <h2>🎉 Game Complete! 🎉</h2>
+            <div class="score">
+                Final Score: <span id="final-score">0</span> / <span id="final-total">10</span>
+            </div>
+            <p id="final-message"></p>
+            <button class="btn" onclick="restartGame()">🔄 Play Again</button>
+        </div>
+    </div>
+
+    <script>
+      
+        
+        const animals = [
+            {
+                name: "hartebeest",
+                image: "images/1.jpg"
+            },
+            {
+                name: "zebra", 
+                image: "images/2.jpg"
+            },
+            {
+                name: "chamelion",
+                image: "images/3.jpeg"
+            },
+            {
+                name: "grant gazelle",
+                image: "images/4.jpg"
+            },
+            {
+                name: "velvet monkey",
+                image: "images/5.jpg"
+            },
+            {
+                name: "crowned crane",
+                image: "images/6d.jpg"
+            },
+            {
+                name: "warthog",
+                image: "images/7a.jpg"
+            },
+            {
+                name: "dolphine",
+                image: "images/8.jpeg"
+            },
+            {
+                name: "sunbird",
+                image: "images/7l.jpg"
+            },
+            {
+                name: "secretary bird",
+                image: "images/8a.jpg"
+            },
+            {
+                name: "leopard",
+                image: "images/8j.PNG"
+            },
+            {
+                name: "thomson gazelle",
+                image: "images/9.jpg"
+            },
+            {
+                name: "vulture",
+                image: "images/9a.jpg"
+            },
+            {
+                name: "buffelo",
+                image: "images/10.jpeg"
+            },
+            {
+                name: "kudu",
+                image: "images/10.jpg"
+            },
+            {
+                name: "superb starling",
+                image: "images/11b.JPG"
+            },
+            {
+                name: "lion",
+                image: "images/12.jpeg"
+            },
+            {
+                name: "fox",
+                image: "images/14N.jpeg"
+            },
+            {
+                name: "rhino",
+                image: "images/17M.jpeg"
+            },
+            {
+                name: "grey headed kingfisher",
+                image: "images/17a.JPG"
+            },
+            {
+                name: "serval cat",
+                image: "images/17.jpeg"
+            },
+            {
+                name: "elephant",
+                image: "images/18.jpeg"
+            },
+            {
+                name: "wildebeest",
+                image: "images/29.jpg"
+            },
+            {
+                name: "catfish",
+                image: "images/35.jpg"
+            },
+            {
+                name: "bateared fox",
+                image: "images/51.jpg"
+            },
+            {
+                name: "polar bear",
+                image: "images/52.jpeg"
+            },
+            {
+                name: "caracal",
+                image: "images/55.jpg"
+            },
+            {
+                name: "klipspringer",
+                image: "images/56.jpg"
+            },
+            {
+                name: "giraffe",
+                image: "images/80.jpg"
+            },
+            {
+                name: "terrapin",
+                image: "images/85.JPG"
+            },
+            {
+                name: "hippo",
+                image: "images/86.jpg"
+            },
+            {
+                name: "crocodile",
+                image: "images/92.jpeg"
+            },
+            {
+                name: "cheetah",
+                image: "images/97.JPG"
+            },
+            {
+                name: "colobus monkey",
+                image: "images/99.JPG"
+            },
+            {
+                name: "Happy birthday Rita!",
+                image: "images/13.jpeg"
+            }
+        ];
+        
+        // Game settings 
+        const INITIAL_TIMER_SECONDS = 5;  // Starting time
+        const MINIMUM_TIMER_SECONDS = 2;   // Fastest time possible
+        const TIMER_WARNING = 3;           // When timer turns red
+        
+
+        let currentAnimalIndex = 0;
+        let score = 0;
+        let timeLeft = INITIAL_TIMER_SECONDS;
+        let timerInterval = null;
+        let gameActive = false;
+        
+        
+        // Start the game
+        function startGame() {
+            // Hide welcome screen, show game screen
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            
+            // Reset game variables
+            currentAnimalIndex = 0;
+            score = 0;
+            gameActive = true;
+            
+            // Update score display
+            document.getElementById('total-questions').textContent = animals.length;
+            
+            // Show first animal
+            showCurrentAnimal();
+        }
+        
+        // Show the current animal and start timer
+        function showCurrentAnimal() {
+            // Check if game is finished
+            if (currentAnimalIndex >= animals.length) {
+                endGame();
+                return;
+            }
+            
+            // Get current animal
+            const animal = animals[currentAnimalIndex];
+            
+            // Update display
+            document.getElementById('animal-image').src = animal.image;
+            document.getElementById('animal-image').alt = animal.name;
+            document.getElementById('current-score').textContent = score;
+            document.getElementById('animal-name').textContent = ''; // Hide name initially
+            
+            // Start timer
+            startTimer();
+        }
+        
+        // Start the countdown timer
+        function startTimer() {
+            // Calculate time for this round - gets faster each round!
+            const timeForThisRound = Math.max(
+                MINIMUM_TIMER_SECONDS, 
+                INITIAL_TIMER_SECONDS - Math.floor(currentAnimalIndex / 2)
+            );
+            
+            timeLeft = timeForThisRound;
+            updateTimerDisplay();
+            
+            // Clear any existing timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            // Start new timer
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                // When timer reaches 0, show answer and move to next
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showAnimalName();
+                    setTimeout(nextAnimal, 2000); // Wait 2 seconds then move to next
+                }
+            }, 1000); // Update every second
+        }
+        
+        // Update what the timer shows
+        function updateTimerDisplay() {
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = timeLeft;
+            
+            // Make timer red when time is running out
+            if (timeLeft <= TIMER_WARNING) {
+                timerElement.classList.add('warning');
+            } else {
+                timerElement.classList.remove('warning');
+            }
+        }
+        
+        // Show the animal's name
+        function showAnimalName() {
+            const animal = animals[currentAnimalIndex];
+            document.getElementById('animal-name').textContent = animal.name;
+        }
+        
+        // Player clicked "Rita"
+        function playerGotIt() {
+            if (!gameActive) return;
+            
+            // Stop timer
+            clearInterval(timerInterval);
+            
+            // Add to score
+            score++;
+            
+            // Show animal name
+            showAnimalName();
+            
+            // Move to next animal after short delay
+            setTimeout(nextAnimal, 1500);
+        }
+        
+        // Move to next animal
+        function nextAnimal() {
+            if (!gameActive) return;
+            
+            currentAnimalIndex++;
+            showCurrentAnimal();
+        }
+        
+        // End the game
+        function endGame() {
+            gameActive = false;
+            
+            // Stop any running timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            // Hide game screen, show final screen
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('final-screen').style.display = 'block';
+            
+            // Update final score
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('final-total').textContent = animals.length;
+            
+            // Show appropriate message based on score
+            const percentage = (score / animals.length) * 100;
+            let message = '';
+            
+            if (percentage >= 80) {
+                message = '🏆 Excellent!';
+            } else if (percentage >= 60) {
+                message = '👍 Great job!';
+            } else if (percentage >= 40) {
+                message = '😊 Good effort!';
+            } else {
+                message = '🌟 Nice try!';
+            }
+            
+            document.getElementById('final-message').textContent = message;
+        }
+        
+        // Restart the game
+        function restartGame() {
+            // Hide final screen, show welcome screen
+            document.getElementById('final-screen').style.display = 'none';
+            document.getElementById('welcome-screen').style.display = 'block';
+        }
+        
+    </script>
+</body>
+</html>
