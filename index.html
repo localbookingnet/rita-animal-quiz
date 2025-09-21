@@ -5,15 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Animal Quiz Game</title>
     <style>
-      
         body {
             font-family: Arial, sans-serif;
-           
-            background-image: url('images/MVC-09.jpeg');
-            background-size: cover;           /* Makes image cover entire screen */
-            background-position: center;      /* Centers the image */
-            background-repeat: no-repeat;     /* Prevents image repetition */
-            background-attachment: fixed;     /* Optional: keeps image fixed during scroll */
+            background-image: url('MVC-09.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
             margin: 0;
             padding: 20px;
             min-height: 100vh;
@@ -31,15 +29,12 @@
             max-width: 500px;
             width: 100%;
         }
-
         
         .title {
             color: #8b4513;
             font-size: 2em;
             margin-bottom: 10px;
         }
-
-        
         
         .timer {
             font-size: 4em;
@@ -113,6 +108,19 @@
         .final-screen {
             display: none;
         }
+
+        .loading-spinner {
+            display: none;
+            margin: 10px 0;
+            color: #8b4513;
+        }
+
+        .error-message {
+            display: none;
+            color: #dc3545;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -128,18 +136,19 @@
                 <p>• Click "RITA!" if you can name the animal</p>
             </div>
             <button class="btn" onclick="startGame()">Start the Quizzzz</button>
+            <div class="loading-spinner" id="loading-spinner">🔄 Loading images...</div>
         </div>
         
         <!-- Game Screen -->
         <div id="game-screen" style="display: none;">
             <div class="score">
-                Score: <span id="current-score">0</span> / <span id="total-questions">10</span>
+                Score: <span id="current-score">0</span> / <span id="total-questions">35</span>
             </div>
             
-            <div class="timer" id="timer">10</div>
+            <div class="timer" id="timer">6</div>
             
-            <!-- Placeholder for animal image - YOU CAN REPLACE THESE -->
             <img id="animal-image" class="animal-image" src="https://via.placeholder.com/300x300/deb887/654321?text=Animal+Picture" alt="Animal">
+            <div class="error-message" id="image-error">⚠️ Image failed to load</div>
             
             <div class="buttons">
                 <button class="btn btn-success" onclick="playerGotIt()">✅ RITA!</button>
@@ -153,7 +162,7 @@
         <div id="final-screen" class="final-screen">
             <h2>🎉 Game Complete! 🎉</h2>
             <div class="score">
-                Final Score: <span id="final-score">0</span> / <span id="final-total">10</span>
+                Final Score: <span id="final-score">0</span> / <span id="final-total">35</span>
             </div>
             <p id="final-message"></p>
             <button class="btn" onclick="restartGame()">🔄 Play Again</button>
@@ -161,166 +170,191 @@
     </div>
 
     <script>
-      
-        
         const animals = [
             {
                 name: "hartebeest",
-                image: "images/1.jpg"
+                image: "1.jpg"
             },
             {
                 name: "zebra", 
-                image: "images/2.jpg"
+                image: "2.jpg"
             },
             {
-                name: "chamelion",
-                image: "images/3.jpeg"
+                name: "chameleon",
+                image: "3.jpg"
             },
             {
                 name: "grant gazelle",
-                image: "images/4.jpg"
+                image: "4.jpg"
             },
             {
                 name: "velvet monkey",
-                image: "images/5.jpg"
+                image: "5.jpg"
             },
             {
                 name: "crowned crane",
-                image: "images/6d.jpg"
+                image: "6d.jpg"
             },
             {
                 name: "warthog",
-                image: "images/7a.jpg"
+                image: "7a.jpg"
             },
             {
-                name: "dolphine",
-                image: "images/8.jpeg"
+                name: "dolphin",
+                image: "8.jpg"
             },
             {
                 name: "sunbird",
-                image: "images/7l.jpg"
+                image: "7l.jpg"
             },
             {
                 name: "secretary bird",
-                image: "images/8a.jpg"
+                image: "8a.jpg"
             },
             {
                 name: "leopard",
-                image: "images/8j.PNG"
+                image: "8j.jpg"
             },
             {
                 name: "thomson gazelle",
-                image: "images/9.jpg"
+                image: "9.jpg"
             },
             {
                 name: "vulture",
-                image: "images/9a.jpg"
+                image: "9a.jpg"
             },
             {
-                name: "buffelo",
-                image: "images/10.jpeg"
+                name: "buffalo",
+                image: "10.jpg"
             },
             {
                 name: "kudu",
-                image: "images/10.jpg"
+                image: "10a.jpg"
             },
             {
                 name: "superb starling",
-                image: "images/11b.JPG"
+                image: "11b.jpg"
             },
             {
                 name: "lion",
-                image: "images/12.jpeg"
+                image: "12.jpg"
             },
             {
                 name: "fox",
-                image: "images/14N.jpeg"
+                image: "14N.jpg"
             },
             {
                 name: "rhino",
-                image: "images/17M.jpeg"
+                image: "17M.jpg"
             },
             {
                 name: "grey headed kingfisher",
-                image: "images/17a.JPG"
+                image: "17a.jpg"
             },
             {
                 name: "serval cat",
-                image: "images/17.jpeg"
+                image: "17.jpg"
             },
             {
                 name: "elephant",
-                image: "images/18.jpeg"
+                image: "18.jpg"
             },
             {
                 name: "wildebeest",
-                image: "images/29.jpg"
+                image: "29.jpg"
             },
             {
                 name: "catfish",
-                image: "images/35.jpg"
+                image: "35.jpg"
             },
             {
-                name: "bateared fox",
-                image: "images/51.jpg"
+                name: "bat-eared fox",
+                image: "51.jpg"
             },
             {
                 name: "polar bear",
-                image: "images/52.jpeg"
+                image: "52.jpg"
             },
             {
                 name: "caracal",
-                image: "images/55.jpg"
+                image: "55.jpg"
             },
             {
                 name: "klipspringer",
-                image: "images/56.jpg"
+                image: "56.jpg"
             },
             {
                 name: "giraffe",
-                image: "images/80.jpg"
+                image: "80.jpg"
             },
             {
                 name: "terrapin",
-                image: "images/85.JPG"
+                image: "85.jpg"
             },
             {
                 name: "hippo",
-                image: "images/86.jpg"
+                image: "86.jpg"
             },
             {
                 name: "crocodile",
-                image: "images/92.jpeg"
+                image: "92.jpg"
             },
             {
                 name: "cheetah",
-                image: "images/97.JPG"
+                image: "97.jpg"
             },
             {
                 name: "colobus monkey",
-                image: "images/99.JPG"
+                image: "99.jpg"
             },
             {
                 name: "Happy birthday Rita!",
-                image: "images/13.jpeg"
+                image: "13.jpg"
             }
         ];
         
         // Game settings 
-        const INITIAL_TIMER_SECONDS = 5;  // Starting time
-        const MINIMUM_TIMER_SECONDS = 2;   // Fastest time possible
-        const TIMER_WARNING = 3;           // When timer turns red
+        const INITIAL_TIMER_SECONDS = 6;  // Starting time
+        const MINIMUM_TIMER_SECONDS = 2;  // Fastest time possible
+        const TIMER_WARNING = 3;          // When timer turns red
         
-
         let currentAnimalIndex = 0;
         let score = 0;
         let timeLeft = INITIAL_TIMER_SECONDS;
         let timerInterval = null;
         let gameActive = false;
+        let imagesPreloaded = false;
         
+        // Preload all images for better performance
+        function preloadImages() {
+            return new Promise((resolve) => {
+                document.getElementById('loading-spinner').style.display = 'block';
+                
+                let loadedCount = 0;
+                const totalImages = animals.length;
+                
+                animals.forEach(animal => {
+                    const img = new Image();
+                    img.onload = img.onerror = () => {
+                        loadedCount++;
+                        if (loadedCount === totalImages) {
+                            document.getElementById('loading-spinner').style.display = 'none';
+                            imagesPreloaded = true;
+                            resolve();
+                        }
+                    };
+                    img.src = animal.image;
+                });
+            });
+        }
         
         // Start the game
-        function startGame() {
+        async function startGame() {
+            // Preload images if not already done
+            if (!imagesPreloaded) {
+                await preloadImages();
+            }
+            
             // Hide welcome screen, show game screen
             document.getElementById('welcome-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
@@ -348,9 +382,22 @@
             // Get current animal
             const animal = animals[currentAnimalIndex];
             
+            // Setup image with error handling
+            const imageElement = document.getElementById('animal-image');
+            const errorElement = document.getElementById('image-error');
+            
+            // Hide error message initially
+            errorElement.style.display = 'none';
+            
+            // Set up error handling
+            imageElement.onerror = function() {
+                this.src = 'https://via.placeholder.com/300x300/deb887/654321?text=Image+Not+Found';
+                errorElement.style.display = 'block';
+            };
+            
             // Update display
-            document.getElementById('animal-image').src = animal.image;
-            document.getElementById('animal-image').alt = animal.name;
+            imageElement.src = animal.image;
+            imageElement.alt = animal.name;
             document.getElementById('current-score').textContent = score;
             document.getElementById('animal-name').textContent = ''; // Hide name initially
             
@@ -360,10 +407,10 @@
         
         // Start the countdown timer
         function startTimer() {
-            // Calculate time for this round - gets faster each round!
+            // Calculate time for this round - gets faster more gradually
             const timeForThisRound = Math.max(
                 MINIMUM_TIMER_SECONDS, 
-                INITIAL_TIMER_SECONDS - Math.floor(currentAnimalIndex / 2)
+                INITIAL_TIMER_SECONDS - Math.floor(currentAnimalIndex / 4)
             );
             
             timeLeft = timeForThisRound;
@@ -417,6 +464,9 @@
             // Add to score
             score++;
             
+            // Update score display immediately
+            document.getElementById('current-score').textContent = score;
+            
             // Show animal name
             showAnimalName();
             
@@ -453,14 +503,16 @@
             const percentage = (score / animals.length) * 100;
             let message = '';
             
-            if (percentage >= 80) {
-                message = '🏆 Excellent!';
+            if (percentage >= 90) {
+                message = '🏆 Outstanding! Animal expert!';
+            } else if (percentage >= 80) {
+                message = '🎯 Excellent! Well done!';
             } else if (percentage >= 60) {
                 message = '👍 Great job!';
             } else if (percentage >= 40) {
                 message = '😊 Good effort!';
             } else {
-                message = '🌟 Nice try!';
+                message = '🌟 Nice try! Play again?';
             }
             
             document.getElementById('final-message').textContent = message;
@@ -472,6 +524,9 @@
             document.getElementById('final-screen').style.display = 'none';
             document.getElementById('welcome-screen').style.display = 'block';
         }
+        
+        // Preload images when page loads
+        window.addEventListener('load', preloadImages);
         
     </script>
 </body>
