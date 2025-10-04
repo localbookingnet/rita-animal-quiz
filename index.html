@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Quiz Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('images/MVC-09.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-container {
+            background: darkkhaki;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+                margin: 10px;
+            }
+        }
+        
+        .title {
+            color: #8b4513;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 600px) {
+            .title {
+                font-size: 1.5em;
+            }
+        }
+        
+        .timer {
+            font-size: 4em;
+            color: #ff6b6b;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 600px) {
+            .timer {
+                font-size: 3em;
+            }
+        }
+        
+        .timer.warning {
+            color: #ff0000;
+            animation: pulse 0.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .animal-image {
+            width: 100%;
+            max-width: 280px;
+            height: auto;
+            aspect-ratio: 1;
+            border: 3px solid #8ABB2A;
+            border-radius: 10px;
+            margin: 15px 0;
+            object-fit: cover;
+            background-color: #f0f0f0;
+        }
+        
+        @media (max-width: 600px) {
+            .animal-image {
+                max-width: 200px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .animal-image {
+                max-width: 160px;
+            }
+        }
+        
+        .score {
+            font-size: 1.5em;
+            margin: 20px 0;
+            color: #654321;
+        }
+        
+        .buttons {
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: #8b4513;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #654321;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .final-screen {
+            display: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            margin: 10px 0;
+            color: #8b4513;
+        }
+
+        .error-message {
+            display: none;
+            color: #dc3545;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Welcome Screen -->
+        <div id="welcome-screen">
+            <h1 class="title">🦁 Animal Quiz Game 🦁</h1>
+            <h2 class="title">Happy birthday Rita!</h2>
+            <div class="instructions">
+                <h3>How to Play:</h3>
+                <p>• There are 35 animal pictures</p>
+                <p>• The clock will go faster and faster</p>
+                <p>• Click "RITA!" if you can name the animal</p>
+            </div>
+            <button class="btn" onclick="startGame()">Start the Quizzzz</button>
+            <div class="loading-spinner" id="loading-spinner">🔄 Loading images...</div>
+        </div>
+        
+        <!-- Game Screen -->
+        <div id="game-screen" style="display: none;">
+            <div class="score">
+                Score: <span id="current-score">0</span> / <span id="total-questions">35</span>
+            </div>
+            
+            <div class="timer" id="timer">6</div>
+            
+            <img id="animal-image" class="animal-image" src="https://via.placeholder.com/300x300/deb887/654321?text=Animal+Picture" alt="Animal">
+            <div class="error-message" id="image-error">⚠️ Image failed to load</div>
+            
+            <div class="buttons">
+                <button class="btn btn-success" onclick="playerGotIt()">✅ RITA!</button>
+                <button class="btn" onclick="nextAnimal()">⏭️ Next Animal</button>
+            </div>
+            
+            <div id="animal-name" style="font-size: 1.3em; margin-top: 15px; color: #654321;"></div>
+        </div>
+        
+        <!-- Final Screen -->
+        <div id="final-screen" class="final-screen">
+            <h2>🎉 Game Complete! 🎉</h2>
+            <div class="score">
+                Final Score: <span id="final-score">0</span> / <span id="final-total">35</span>
+            </div>
+            <p id="final-message"></p>
+            <button class="btn" onclick="restartGame()">🔄 Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const animals = [
+            {
+                name: "hartebeest",
+                image: "images/1.jpg"
+            },
+            {
+                name: "zebra", 
+                image: "images/2.jpg"
+            },
+            {
+                name: "chameleon",
+                image: "images/3.jpeg"
+            },
+            {
+                name: "grant gazelle",
+                image: "images/4.jpg"
+            },
+            {
+                name: "velvet monkey",
+                image: "images/5.jpg"
+            },
+            {
+                name: "crowned crane",
+                image: "images/6d.jpg"
+            },
+            {
+                name: "warthog",
+                image: "images/7a.jpg"
+            },
+            {
+                name: "dolphin",
+                image: "images/8.jpg"
+            },
+            {
+                name: "sunbird",
+                image: "images/7l.jpg"
+            },
+            {
+                name: "secretary bird",
+                image: "images/8a.jpg"
+            },
+            {
+                name: "leopard",
+                image: "images/8j.jpg"
+            },
+            {
+                name: "thomson gazelle",
+                image: "images/9.jpg"
+            },
+            {
+                name: "vulture",
+                image: "images/9a.jpg"
+            },
+            {
+                name: "buffalo",
+                image: "images/10.jpg"
+            },
+            {
+                name: "kudu",
+                image: "images/10a.jpg"
+            },
+            {
+                name: "superb starling",
+                image: "images/11b.jpg"
+            },
+            {
+                name: "lion",
+                image: "images/12.jpg"
+            },
+            {
+                name: "fox",
+                image: "images/14N.jpg"
+            },
+            {
+                name: "rhino",
+                image: "images/17M.jpg"
+            },
+            {
+                name: "grey headed kingfisher",
+                image: "images/17a.jpg"
+            },
+            {
+                name: "serval cat",
+                image: "images/17.jpg"
+            },
+            {
+                name: "elephant",
+                image: "images/18.jpg"
+            },
+            {
+                name: "wildebeest",
+                image: "images/29.jpg"
+            },
+            {
+                name: "catfish",
+                image: "images/35.jpg"
+            },
+            {
+                name: "bat-eared fox",
+                image: "images/51.jpg"
+            },
+            {
+                name: "polar bear",
+                image: "images/52.jpg"
+            },
+            {
+                name: "caracal",
+                image: "images/55.jpg"
+            },
+            {
+                name: "klipspringer",
+                image: "images/56.jpg"
+            },
+            {
+                name: "giraffe",
+                image: "images/80.jpg"
+            },
+            {
+                name: "terrapin",
+                image: "images/85.jpg"
+            },
+            {
+                name: "hippo",
+                image: "images/86.jpg"
+            },
+            {
+                name: "crocodile",
+                image: "images/77.jpg"
+            },
+            {
+                name: "cheetah",
+                image: "images/97.jpg"
+            },
+            {
+                name: "colobus monkey",
+                image: "images/99.jpg"
+            },
+            {
+                name: "Happy birthday Rita!",
+                image: "images/13.jpg"
+            }
+        ];
+        
+        // Game settings 
+        // Game settings 
+        const INITIAL_TIMER_SECONDS = 15;
+        const MINIMUM_TIMER_SECONDS = 10;
+        const TIMER_WARNING = 5;
+        
+        let currentAnimalIndex = 0;
+        let score = 0;
+        let timeLeft = INITIAL_TIMER_SECONDS;
+        let timerInterval = null;
+        let gameActive = false;
+        let imagesPreloaded = false;
+        
+        function preloadImages() {
+            return new Promise((resolve) => {
+                document.getElementById('loading-spinner').style.display = 'block';
+                
+                let loadedCount = 0;
+                const totalImages = animals.length;
+                
+                animals.forEach(animal => {
+                    const img = new Image();
+                    img.onload = img.onerror = () => {
+                        loadedCount++;
+                        if (loadedCount === totalImages) {
+                            document.getElementById('loading-spinner').style.display = 'none';
+                            imagesPreloaded = true;
+                            resolve();
+                        }
+                    };
+                    img.src = animal.image;
+                });
+            });
+        }
+        
+        async function startGame() {
+            if (!imagesPreloaded) {
+                await preloadImages();
+            }
+            
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            
+            currentAnimalIndex = 0;
+            score = 0;
+            gameActive = true;
+            
+            document.getElementById('total-questions').textContent = animals.length;
+            
+            showCurrentAnimal();
+        }
+        
+        function showCurrentAnimal() {
+            if (currentAnimalIndex >= animals.length) {
+                endGame();
+                return;
+            }
+            
+            const animal = animals[currentAnimalIndex];
+            
+            const imageElement = document.getElementById('animal-image');
+            const errorElement = document.getElementById('image-error');
+            
+            errorElement.style.display = 'none';
+            
+            imageElement.onerror = function() {
+                this.src = 'https://via.placeholder.com/300x300/deb887/654321?text=Image+Not+Found';
+                errorElement.style.display = 'block';
+            };
+            
+            imageElement.src = animal.image;
+            imageElement.alt = animal.name;
+            document.getElementById('current-score').textContent = score;
+            document.getElementById('animal-name').textContent = '';
+            
+            startTimer();
+        }
+        
+        function startTimer() {
+            const timeForThisRound = Math.max(
+                MINIMUM_TIMER_SECONDS, 
+                INITIAL_TIMER_SECONDS - Math.floor(currentAnimalIndex / 4)
+            );
+            
+            timeLeft = timeForThisRound;
+            updateTimerDisplay();
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showAnimalName();
+                    setTimeout(nextAnimal, 2000);
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = timeLeft;
+            
+            if (timeLeft <= TIMER_WARNING) {
+                timerElement.classList.add('warning');
+            } else {
+                timerElement.classList.remove('warning');
+            }
+        }
+        
+        function showAnimalName() {
+            const animal = animals[currentAnimalIndex];
+            document.getElementById('animal-name').textContent = animal.name;
+        }
+        
+        function playerGotIt() {
+            if (!gameActive) return;
+            
+            clearInterval(timerInterval);
+            
+            score++;
+            
+            document.getElementById('current-score').textContent = score;
+            
+            showAnimalName();
+            
+            setTimeout(nextAnimal, 1500);
+        }
+        
+        function nextAnimal() {
+            if (!gameActive) return;
+            
+            currentAnimalIndex++;
+            showCurrentAnimal();
+        }
+        
+        function endGame() {
+            gameActive = false;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('final-screen').style.display = 'block';
+            
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('final-total').textContent = animals.length;
+            
+            const percentage = (score / animals.length) * 100;
+            let message = '';
+            
+            if (percentage >= 90) {
+                message = '🏆 Outstanding! Animal expert!';
+            } else if (percentage >= 80) {
+                message = '🎯 Excellent! Well done!';
+            } else if (percentage >= 60) {
+                message = '👍 Great job!';
+            } else if (percentage >= 40) {
+                message = '😊 Good effort!';
+            } else {
+                message = '🌟 Nice try! Play again?';
+            }
+            
+            document.getElementById('final-message').textContent = message;
+        }
+        
+        function restartGame() {
+            document.getElementById('final-screen').style.display = 'none';
+            document.getElementById('welcome-screen').style.display = 'block';
+        }
+        
+        window.addEventListener('load', preloadImages);
+        
+    </script>
+</body>
+</html>
